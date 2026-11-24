@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASHRA — Character Dossier</title>
+  <link rel="preconnect" href="https://googleapis.com">
+  <link rel="preconnect" href="https://gstatic.com" crossorigin>
+  <link href="https://googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-void: #030305;
+      --bg-card: rgba(10, 10, 14, 0.85);
+      --border-subtle: #1c1c24;
+      --text-main: #e4e4e9;
+      --text-muted: #8b8b99;
+      --crimson: #d91636;
+      --crimson-glow: rgba(217, 22, 54, 0.25);
+      --scroll-darkness: 0;
+      --hold-tension: 0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-void);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.65;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 25%, rgba(140, 10, 30, calc(0.16 + var(--hold-tension) * 0.22)), #010102 80%);
+      z-index: 0;
+    }
+
+    .scroll-vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(circle at 50% 50%, transparent calc(30% - var(--hold-tension) * 16%), rgba(0, 0, 0, calc(0.28 + var(--scroll-darkness) * 0.55 + var(--hold-tension) * 0.65)) 100%);
+      box-shadow: inset 0 0 calc(65px + var(--scroll-darkness) * 145px + var(--hold-tension) * 160px) rgba(0, 0, 0, 0.98);
+    }
+
+    #eyesCanvas, #fogCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #fxCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    #hallucinationLayer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      overflow: hidden;
+    }
+
+    /* Giant Nightmare Hound Screamer */
+    #peekingHound {
+      position: fixed;
+      width: min(760px, 92vw);
+      height: auto;
+      pointer-events: none;
+      z-index: 4;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.82);
+      transition: opacity 0.6s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease;
+      filter: drop-shadow(0 24px 55px rgba(0, 0, 0, 1)) drop-shadow(0 0 28px rgba(217, 22, 54, 0.5));
+    }
+
+    #peekingHound.stalking {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #peekingHound.lunge {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.42);
+      filter: drop-shadow(0 30px 70px rgba(0, 0, 0, 1)) drop-shadow(0 0 65px rgba(255, 24, 60, 1));
+      transition: transform 0.11s cubic-bezier(0.12, 1, 0.28, 1), filter 0.11s ease;
+    }
+
+    #peekingHound.retreat {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.68);
+      transition: opacity 0.16s ease, transform 0.16s ease;
+    }
+
+    /* Screen Shake & Easter Egg Takeover */
+    body.screamer-shake .container {
+      animation: violentShake 0.36s steps(2, end);
+    }
+
+    body.beast-takeover .container {
+      animation: violentShake 0.18s infinite;
+    }
+
+    body.beast-takeover .card {
+      border-color: #ff173b !important;
+      background: rgba(24, 3, 7, 0.94) !important;
+      box-shadow: 0 0 40px rgba(217, 22, 54, 0.5), inset 0 0 30px rgba(255, 24, 60, 0.25) !important;
+    }
+
+    body.beast-takeover .entry p,
+    body.beast-takeover .motivation-box p {
+      color: #ff2a4b !important;
+      font-family: 'Cinzel', serif !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.14em !important;
+      text-transform: uppercase !important;
+      text-shadow: 0 0 12px rgba(255, 24, 60, 0.85);
+    }
+
+    @keyframes violentShake {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-9px, 6px); }
+      40% { transform: translate(8px, -7px); }
+      60% { transform: translate(-7px, -5px); }
+      80% { transform: translate(9px, 5px); }
+      100% { transform: translate(0, 0); }
+    }
+    .beast-flash {
+      position: absolute;
+      font-family: 'Cinzel', serif;
+      font-weight: 800;
+      letter-spacing: 0.24em;
+      color: rgba(255, 22, 58, 0.9);
+      text-shadow: 0 0 22px rgba(255, 22, 58, 0.95), -4px 2px 0 rgba(120, 0, 20, 0.85);
+      text-transform: uppercase;
+      white-space: nowrap;
+      pointer-events: none;
+      animation: hallucinateFlicker 0.65s ease-out forwards;
+    }
+
+    .beast-flash.long-phrase {
+      animation: longPhraseFlicker 1.6s ease-out forwards;
+    }
+
+    .beast-scratch {
+      position: absolute;
+      width: 240px;
+      height: 120px;
+      pointer-events: none;
+      opacity: 0.85;
+      filter: drop-shadow(0 0 10px rgba(255, 24, 60, 0.8));
+      animation: hallucinateFlicker 0.3s steps(2, end) forwards;
+    }
+
+    @keyframes hallucinateFlicker {
+      0% { opacity: 0; transform: scale(1.1) skewX(-10deg); }
+      15% { opacity: 0.95; transform: scale(0.99) skewX(6deg); }
+      45% { opacity: 0.7; transform: scale(1.02) skewX(-4deg); }
+      75% { opacity: 0.85; transform: scale(1) skewX(2deg); }
+      100% { opacity: 0; transform: scale(0.97); }
+    }
+
+    @keyframes longPhraseFlicker {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); letter-spacing: 0.32em; }
+      12% { opacity: 0.95; transform: translate(-50%, -50%) scale(1); letter-spacing: 0.24em; }
+      75% { opacity: 0.82; transform: translate(-50%, -50%) scale(1.01); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(0.96); letter-spacing: 0.28em; }
+    }
+
+    .hound-bg {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -48%);
+      width: min(1360px, 130vw);
+      height: auto;
+      pointer-events: none;
+      z-index: 0;
+      opacity: calc(0.75 + var(--scroll-darkness) * 0.22 + var(--hold-tension) * 0.25);
+      will-change: transform, opacity;
+    }
+
+    .hound-bg svg { width: 100%; height: auto; display: block; }
+
+    #houndEyesGroup {
+      filter: drop-shadow(0 0 calc(10px + var(--scroll-darkness) * 20px + var(--hold-tension) * 28px) rgba(255, 24, 60, calc(0.4 + var(--scroll-darkness) * 0.55 + var(--hold-tension) * 0.6)));
+      transition: filter 0.15s ease;
+    }
+
+    body.slash-pulse #houndEyesGroup {
+      filter: drop-shadow(0 0 34px rgba(255, 24, 60, 1));
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      user-select: text;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 36px;
+      margin-bottom: 40px;
+    }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--crimson);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .eye-indicator {
+      display: inline-block;
+      width: 18px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--crimson);
+      box-shadow: 0 0 12px var(--crimson);
+      position: relative;
+    }
+
+    .eye-indicator::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 3px;
+      height: 8px;
+      border-radius: 1px;
+      background: #030305;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(3rem, 7vw, 4.8rem);
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      line-height: 1;
+      color: #ffffff;
+      text-shadow: 0 0 calc(32px + var(--hold-tension) * 28px) rgba(217, 22, 54, calc(0.25 + var(--hold-tension) * 0.65));
+    }
+
+    .meta-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding: 5px 12px;
+      background: var(--bg-card);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    .tag span { color: var(--text-main); }
+
+    .motivation-box {
+      background: linear-gradient(90deg, rgba(217, 22, 54, 0.12), rgba(10, 10, 14, 0.78));
+      backdrop-filter: blur(6px);
+      border-left: 3px solid var(--crimson);
+      padding: 22px 26px;
+      margin-bottom: 40px;
+    }
+
+    .motivation-box .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--crimson);
+      margin-bottom: 8px;
+    }
+
+    .motivation-box p { font-size: 1.02rem; color: #f0f0f5; }
+
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-subtle);
+      padding: 28px;
+      transition: border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 130px;
+      height: 130px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(6px, -6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' viewBox='0 0 120 120'%3E%3Cpath d='M18 6 Q55 48 92 108 L86 112 Q48 54 14 10 Z' fill='%23d91636' fill-opacity='0.55'/%3E%3Cpath d='M42 2 Q78 44 112 98 L106 102 Q70 50 38 6 Z' fill='%23d91636' fill-opacity='0.75'/%3E%3Cpath d='M68 0 Q96 36 122 82 L117 85 Q90 42 64 4 Z' fill='%23ff1e42' fill-opacity='0.6'/%3E%3Cpath d='M8 28 Q42 66 72 118 L67 120 Q36 70 5 31 Z' fill='%23850c20' fill-opacity='0.45'/%3E%3C/svg%3E");
+    }
+
+    .card:hover {
+      border-color: rgba(217, 22, 54, 0.65);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), inset 0 0 24px rgba(217, 22, 54, 0.08);
+    }
+
+    .card:hover::before { opacity: 1; transform: translate(0, 0); }
+
+    #leashEntry {
+      padding: 10px 12px;
+      margin-left: -12px;
+      margin-right: -12px;
+      border-left: 2px solid transparent;
+      background: rgba(217, 22, 54, calc(var(--hold-tension) * 0.14));
+      border-left-color: rgba(255, 30, 66, calc(var(--hold-tension) * 0.95));
+      transition: background 0.1s linear, border-color 0.1s linear;
+    }
+
+    #leashEntry p {
+      color: color-mix(in srgb, var(--text-muted) calc((1 - var(--hold-tension)) * 100%), #f5d0d6);
+    }
+
+    .col-6 { grid-column: span 6; }
+
+    @media (max-width: 768px) { .col-6 { grid-column: span 12; } }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-title::after { content: "✦"; color: var(--crimson); font-size: 0.85rem; }
+
+    .entry { margin-bottom: 18px; }
+    .entry:last-child { margin-bottom: 0; }
+
+    .entry-head {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--crimson);
+      margin-bottom: 4px;
+    }
+
+    .entry p { font-size: 0.95rem; color: var(--text-muted); }
+
+    footer {
+      margin-top: 56px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    #easterEggTrigger {
+      cursor: pointer;
+      transition: color 0.25s ease, text-shadow 0.25s ease;
+    }
+
+    #easterEggTrigger:hover {
+      color: var(--crimson);
+      text-shadow: 0 0 12px rgba(217, 22, 54, 0.85);
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-vignette" aria-hidden="true"></div>
+  <canvas id="fogCanvas" aria-hidden="true"></canvas>
+  <canvas id="eyesCanvas" aria-hidden="true"></canvas>
+  <div id="hallucinationLayer" aria-hidden="true"></div>
+  <canvas id="fxCanvas" aria-hidden="true"></canvas>
+
+  <!-- Giant Nightmare Beast Screamer -->
+  <div id="peekingHound" aria-hidden="true">
+    <svg viewBox="0 0 760 620" fill="none" xmlns="http://w3.org">
+      <defs>
+        <radialGradient id="peekerSocket" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ff173b" stop-opacity="1" />
+          <stop offset="45%" stop-color="#8f071d" stop-opacity="0.7" />
+          <stop offset="100%" stop-color="#1a0105" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <!-- Ragged Shadow Mane & Spikes -->
+      <path d="M380 18 L318 118 L212 10 L264 162 L132 76 L216 218 L64 166 L184 282 L26 286 L176 372 L38 456 L196 474 L112 586 L266 538 L244 612 L380 554 L516 612 L494 538 L648 586 L564 474 L722 456 L584 372 L734 286 L576 282 L696 166 L544 218 L628 76 L496 162 L548 10 L442 118 Z" fill="#040406" stroke="#360811" stroke-width="3" />
+      <path d="M180 150 L240 230 M580 150 L520 230 M110 320 L190 360 M650 320 L570 360 M280 50 L315 140 M480 50 L445 140" stroke="#4d0916" stroke-width="3.5" stroke-linecap="round" />
+
+      <!-- Gaunt Split Skull -->
+      <path d="M236 168 L322 256 L380 202 L438 256 L524 168 L484 308 L380 268 L276 308 Z" fill="#010102" stroke="#6e0d1e" stroke-width="2.5" />
+      <path d="M380 206 L380 284 M310 220 L345 275 M450 220 L415 275" stroke="#470813" stroke-width="2" />
+
+      <!-- Hollow Eye Sockets & Glowing Crimson Eyes -->
+      <ellipse cx="298" cy="288" rx="64" ry="32" fill="url(#peekerSocket)" />
+      <ellipse cx="462" cy="284" rx="68" ry="34" fill="url(#peekerSocket)" />
+
+      <path d="M242 266 Q300 262 356 306 Q304 324 254 294 Z" fill="#ff173b" />
+      <path d="M518 258 Q456 262 404 306 Q456 326 506 292 Z" fill="#ff173b" />
+      <!-- Extra Spider-like Beast Eyes -->
+      <ellipse cx="238" cy="242" rx="12" ry="6" transform="rotate(-24 238 242)" fill="#d91636" />
+      <ellipse cx="522" cy="236" rx="14" ry="7" transform="rotate(22 522 236)" fill="#d91636" />
+
+      <!-- Tracking Slit Pupils -->
+      <g id="peekingPupils">
+        <ellipse cx="300" cy="290" rx="3.2" ry="16" transform="rotate(-10 300 290)" fill="#020203" />
+        <ellipse cx="460" cy="288" rx="3.5" ry="18" transform="rotate(10 460 288)" fill="#020203" />
+        <circle cx="238" cy="242" r="2" fill="#020203" />
+        <circle cx="522" cy="236" r="2.2" fill="#020203" />
+      </g>
+
+      <!-- Snarling Upper Jaw & Double Fangs -->
+      <path d="M246 376 Q312 324 380 352 Q448 324 514 376 L486 426 Q380 386 274 426 Z" fill="#26040a" stroke="#8c0e23" stroke-width="2.5" />
+      <polygon points="268,404 292,516 314,400" fill="#1b1b22" stroke="#cc1433" stroke-width="1.5" />
+      <polygon points="316,396 328,464 340,392" fill="#121217" stroke="#6e0c1d" stroke-width="1" />
+      <polygon points="344,390 360,484 372,388" fill="#18181f" stroke="#9e1128" stroke-width="1.2" />
+      <polygon points="388,388 400,484 416,390" fill="#18181f" stroke="#9e1128" stroke-width="1.2" />
+      <polygon points="420,392 432,464 444,396" fill="#121217" stroke="#6e0c1d" stroke-width="1" />
+      <polygon points="446,400 468,518 492,404" fill="#1b1b22" stroke="#cc1433" stroke-width="1.5" />
+
+      <!-- Blood Strings -->
+      <path d="M292 508 Q298 545 290 580 M360 478 Q356 525 362 565 M400 478 Q405 525 398 565 M468 510 Q462 548 470 582" stroke="#a80d27" stroke-width="2.2" />
+
+      <!-- Massive Shadow Claws Gripping the Text Card -->
+      <g id="peekingClaws">
+        <path d="M126 426 Q86 484 56 566 L76 572 Q112 496 152 440 Z" fill="#07070a" stroke="#ff1e42" stroke-width="1.8" />
+        <path d="M172 444 Q140 512 120 594 L140 598 Q166 520 198 456 Z" fill="#07070a" stroke="#ff1e42" stroke-width="1.8" />
+        <path d="M222 458 Q202 528 192 606 L212 608 Q226 534 246 468 Z" fill="#07070a" stroke="#ff1e42" stroke-width="1.8" />
+
+        <path d="M634 426 Q674 484 704 566 L684 572 Q648 496 608 440 Z" fill="#07070a" stroke="#ff1e42" stroke-width="1.8" />
+        <path d="M588 444 Q620 512 640 594 L620 598 Q594 520 562 456 Z" fill="#07070a" stroke="#ff1e42" stroke-width="1.8" />
+        <path d="M538 458 Q558 528 568 606 L548 608 Q534 534 514 468 Z" fill="#07070a" stroke="#ff1e42" stroke-width="1.8" />
+      </g>
+    </svg>
+  </div>
+  <div class="hound-bg" id="houndBg" aria-hidden="true">
+    <svg viewBox="0 0 1200 900" fill="none" xmlns="http://w3.org">
+      <defs>
+        <radialGradient id="abyssAura" cx="50%" cy="44%" r="46%">
+          <stop offset="0%" stop-color="#5e0614" stop-opacity="0.45" />
+          <stop offset="55%" stop-color="#1f0207" stop-opacity="0.22" />
+          <stop offset="100%" stop-color="#030305" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="socketGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ff1a3c" stop-opacity="1" />
+          <stop offset="40%" stop-color="#99081f" stop-opacity="0.65" />
+          <stop offset="100%" stop-color="#3b020b" stop-opacity="0" />
+        </radialGradient>
+        <filter id="rottingMass" x="-15%" y="-15%" width="130%" height="130%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="5" seed="7" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="28" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+        <filter id="jaggedFlesh" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence type="turbulence" baseFrequency="0.06" numOctaves="3" seed="14" result="turb" />
+          <feDisplacementMap in="SourceGraphic" in2="turb" scale="11" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+
+      <circle cx="600" cy="410" r="400" fill="url(#abyssAura)" />
+
+      <g filter="url(#rottingMass)">
+        <path d="M585 60 L515 170 L390 25 L445 215 L295 95 L380 265 L185 190 L325 335 L125 320 L305 430 L105 510 L295 555 L155 695 L345 660 L245 835 L420 745 L380 910 L515 795 L615 935 L695 790 L835 905 L780 735 L965 825 L855 650 L1055 685 L905 545 L1095 495 L895 420 L1070 315 L875 315 L1005 180 L815 245 L890 85 L750 195 L795 20 L655 155 Z" fill="#07070a" stroke="#181820" stroke-width="2.5" />
+        <path d="M350 220 C270 250 220 310 180 390 M850 215 C935 245 985 315 1020 395 M310 520 C260 600 245 690 235 790 M890 515 C945 595 960 685 970 785 M430 710 L410 860 M770 705 L795 855 M520 770 L505 895 M680 765 L700 890" stroke="#26070d" stroke-width="4" stroke-linecap="round" />
+      </g>
+
+      <g filter="url(#jaggedFlesh)">
+        <path d="M435 225 L525 318 L595 262 L672 324 L768 218 L728 378 L602 332 L472 384 Z" fill="#030304" stroke="#3d0b14" stroke-width="2" />
+        <path d="M495 250 L548 310 L535 345 M705 245 L650 315 L665 348 M575 225 L598 265 L588 305 M622 228 L602 268 L614 302 M458 295 L515 342 M742 290 L682 340" stroke="#4a0d18" stroke-width="1.8" />
+        <path d="M452 385 Q435 465 462 565 M468 395 Q455 470 478 555 M748 380 Q768 465 738 565 M732 390 Q748 470 722 555" stroke="#5c0c1a" stroke-width="3" />
+      </g>
+
+      <path d="M572 402 L598 362 L626 404 L612 438 L600 418 L586 438 Z" fill="#010102" stroke="#590c1a" stroke-width="1.5" />
+      <path d="M598 368 L599 422" stroke="#2b060c" stroke-width="2" />
+
+      <g id="houndEyesGroup">
+        <ellipse cx="502" cy="356" rx="76" ry="38" fill="url(#socketGlow)" />
+        <ellipse cx="702" cy="348" rx="82" ry="42" fill="url(#socketGlow)" />
+        <path d="M442 336 Q505 332 568 378 Q512 396 456 364 Z" fill="#ff173b" />
+        <path d="M762 324 Q695 326 632 374 Q690 398 748 358 Z" fill="#ff173b" />
+        <ellipse cx="436" cy="312" rx="14" ry="7" transform="rotate(-24 436 312)" fill="#d91636" />
+        <ellipse cx="768" cy="304" rx="16" ry="8" transform="rotate(22 768 304)" fill="#d91636" />
+        <ellipse cx="556" cy="296" rx="10" ry="5" transform="rotate(15 556 296)" fill="#b80f2b" />
+        <ellipse cx="646" cy="292" rx="11" ry="5.5" transform="rotate(-18 646 292)" fill="#b80f2b" />
+        <g id="houndPupils">
+          <ellipse cx="504" cy="358" rx="3.2" ry="15" transform="rotate(-12 504 358)" fill="#020203" />
+          <ellipse cx="698" cy="354" rx="3.6" ry="17" transform="rotate(10 698 354)" fill="#020203" />
+          <circle cx="436" cy="312" r="2.2" fill="#020203" />
+          <circle cx="768" cy="304" r="2.5" fill="#020203" />
+          <circle cx="556" cy="296" r="1.6" fill="#020203" />
+          <circle cx="646" cy="292" r="1.8" fill="#020203" />
+        </g>
+      </g>
+
+      <g filter="url(#jaggedFlesh)">
+        <path d="M442 452 Q520 395 600 426 Q680 392 758 455 L726 508 Q600 462 474 508 Z" fill="#24050a" stroke="#6e0d1e" stroke-width="2" />
+      </g>
+
+      <polygon points="468,488 492,608 514,484" fill="#1b1b22" stroke="#9e1128" stroke-width="1.2" />
+      <polygon points="512,482 522,556 534,478" fill="#121217" stroke="#590b18" stroke-width="0.9" />
+      <polygon points="536,476 554,578 566,472" fill="#18181f" stroke="#7d0e20" stroke-width="1" />
+      <polygon points="568,471 578,535 588,470" fill="#121217" />
+      <polygon points="592,470 603,558 614,470" fill="#16161d" stroke="#660c1b" stroke-width="0.9" />
+      <polygon points="618,471 630,538 642,473" fill="#121217" />
+      <polygon points="644,474 662,584 676,478" fill="#18181f" stroke="#7d0e20" stroke-width="1" />
+      <polygon points="678,480 688,552 700,484" fill="#121217" stroke="#590b18" stroke-width="0.9" />
+      <polygon points="698,485 724,616 744,490" fill="#1b1b22" stroke="#9e1128" stroke-width="1.2" />
+
+      <g filter="url(#jaggedFlesh)">
+        <path d="M456 588 L512 695 L596 724 L688 692 L746 584 L694 622 L598 638 L504 622 Z" fill="#07070a" stroke="#5c0b19" stroke-width="2" />
+      </g>
+
+      <path d="M492 595 Q502 618 496 638 M522 552 Q528 590 520 632 M554 574 Q550 605 556 636 M603 554 L600 638 M662 580 Q668 608 660 636 M688 548 Q682 588 690 630 M722 605 Q714 622 720 640" stroke="#8c0d22" stroke-width="1.6" opacity="0.8" />
+
+      <polygon points="476,612 502,502 524,618" fill="#1b1b22" stroke="#9e1128" stroke-width="1.2" />
+      <polygon points="528,620 542,542 556,625" fill="#121217" stroke="#590b18" stroke-width="0.9" />
+      <polygon points="560,628 576,562 588,632" fill="#16161d" stroke="#660c1b" stroke-width="0.9" />
+      <polygon points="592,633 604,574 616,633" fill="#121217" />
+      <polygon points="620,632 636,558 650,628" fill="#16161d" stroke="#660c1b" stroke-width="0.9" />
+      <polygon points="654,625 668,540 682,620" fill="#121217" stroke="#590b18" stroke-width="0.9" />
+      <polygon points="684,618 712,498 734,610" fill="#1b1b22" stroke="#9e1128" stroke-width="1.2" />
+    </svg>
+  </div>
+
+  <div class="container">
+    <header>
+      <div class="eyebrow">
+        <span class="eye-indicator"></span>
+        <span>CHARACTER DOSSIER</span>
+      </div>
+      <h1>ASHRA</h1>
+      <div class="meta-tags">
+        <div class="tag">HEIGHT: <span>175 CM</span></div>
+        <div class="tag">BUILD: <span>LEAN / HYPER-ELASTIC</span></div>
+        <div class="tag">TEMPERAMENT: <span>COLD PRAGMATIST</span></div>
+      </div>
+    </header>
+    <section class="motivation-box">
+      <div class="label">Core Motivation</div>
+      <p>
+        Ashra does not seek a cure or deliverance from the beast — he accepted long ago that the Hound will remain with him until the end. His goal is simpler and harsher: never let the monster devour him from within, yet never become someone who fears his own strength. He holds the leash out of stubbornness and cold calculation — for him, every fight is not a battle for victory, but another test of who breaks whom.
+      </p>
+    </section>
+
+    <main class="grid">
+      <article class="card col-6">
+        <h2 class="section-title">Appearance &amp; Demeanor</h2>
+
+        <div class="entry">
+          <div class="entry-head">Physique</div>
+          <p>175 cm. A dry, lean, and hyper-elastic frame built on spring-like ligaments, dense musculature, and zero excess weight.</p>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">Head &amp; Gaze</div>
+          <p>Tousled black hair (wolf cut) with his face sunk in deep shadow. A heavy, piercing stare of bright crimson eyes — during sudden dashes in motion, his eyes leave a brief red trail slicing through the dark.</p>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">Organic Claws</div>
+          <p>Natural, organic black hands tipped with razor-sharp claws extending slightly past the wrists, as if carved from hardened shadow or chitin.</p>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">Behavioral Contrast</div>
+          <p>Restrained, cold, pragmatic, and slightly detached in daily life under strict self-control. In combat, he drops all civility, moving with the ruthless, brutal efficiency of a starving predator.</p>
+        </div>
+      </article>
+
+      <article class="card col-6">
+        <h2 class="section-title">Origin &amp; The Hound</h2>
+
+        <div class="entry">
+          <div class="entry-head">Curse of the Devourer</div>
+          <p>In the past, Ashra survived an encounter with an ancient shadow hound-devourer — a gaunt, solitary, and vicious beast — suppressing and absorbing the monster's essence from within.</p>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">Predatory Focus &amp; Feeding</div>
+          <p>Unburdened by sensory overload in everyday life, once Ashra locks onto a target he effortlessly reads fear, ragged breathing, and subtle muscle tension before a strike. In the heat of combat, the devourer feeds on enemies' fresh blood, sealing minor wounds and stripping away fatigue while the fight lasts.</p>
+        </div>
+
+        <div class="entry" id="leashEntry">
+          <div class="entry-head">Bond &amp; Price of the Leash</div>
+          <p>The Hound speaks no words — it answers with a low growl in his chest, flashes of alien imagery, bloodlust, and sudden spikes of adrenaline. Ashra holds the chain himself and never blacks out completely. Yet in brutal moments, he may intentionally loosen his grip — or it slips under pressure, letting the Hound cut in for seconds (his crimson pupils narrow into beastly slits and shadows thicken around his armor). Under its sway, he ignores his own defense, charges head-on, and strikes with excess brutality. The beast remembers freedom: each time it pulls harder, leaving Ashra drained and ravenous afterward. He knows well that if he ever lets go entirely, only a hollow shell obsessed with an endless hunt will remain.</p>
+        </div>
+      </article>
+
+      <article class="card col-6">
+        <h2 class="section-title">Wardrobe &amp; Armament</h2>
+
+        <div class="entry">
+          <div class="entry-head">Civilian Attire</div>
+          <p>A long black gothic coat with a high stand-up collar, silver clasps, a waist belt, and wide cuffs that completely conceal his black clawed hands. This is a separate peacetime outfit worn instead of his combat base and armor — the coat is never worn over the exoskeleton, but swapped out prior to battle.</p>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">Combat Base</div>
+          <p>Form-fitting black long-sleeve turtleneck accented with thin crimson stripes, black drawstring shorts, and dense dark-gray leg wraps for unrestricted agility and silent movement.</p>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">Armor of the Beast</div>
+          <p>A thin, hyper-sculpted, dense black exoskeleton featuring a spiked spine ridge (the materialized shell of the absorbed hound) and a tattered black mane-cloak. Far lighter than knight plate so it never hinders acrobatics, yet dense enough to lend tangible weight to every impact. Ashra dons or removes the predatory beast helmet-mask freely at will.</p>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">Weapons</div>
+          <p>Two curved predatory daggers with organic black hilts and matte dark blades that cast zero glare in the dark.</p>
+        </div>
+      </article>
+
+      <article class="card col-6">
+        <h2 class="section-title">Combat Mechanics</h2>
+
+        <div class="entry">
+          <div class="entry-head">"Gouging" Acrobatics</div>
+          <p>Grounded, predatory physicality incorporating quadrupedal sprints, low rolls, and wall-jumps. Ashra never floats through the air defying physics — he weaponizes gravity, leverage, and the battering-ram inertia of his dense frame, tearing deep gouges into earth and stone with claws and feet on every launch and landing.</p>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">Exoskeleton Output</div>
+          <p>The armor numbs pain and fear, stripping away the brain's limiters to push speed and reflexes to inhuman levels. If joints dislocate or tendons strain, the armor rigidly locks and binds his frame from within so he never loses momentum.</p>
+        </div>
+
+        <div class="entry">
+          <div class="entry-head">Cost of Overdrive</div>
+          <p>Thanks to his lean, elastic build, Ashra absorbs high-speed strain well in standard skirmishes. However, when he pushes speed and fury to the absolute peak, blood vessels rupture under the pressure — and dark blood seeps from the slits of his helmet and the seams of his armor.</p>
+        </div>
+      </article>
+    </main>
+
+    <footer>
+      <span id="easterEggTrigger">DOSSIER // ASHRA</span>
+      <span>175 CM</span>
+    </footer>
+  </div>
+  <script>
+    const fogCanvas = document.getElementById('fogCanvas');
+    const fCtx = fogCanvas.getContext('2d');
+    const eyesCanvas = document.getElementById('eyesCanvas');
+    const eCtx = eyesCanvas.getContext('2d');
+    const fxCanvas = document.getElementById('fxCanvas');
+    const ctx = fxCanvas.getContext('2d');
+    const houndBg = document.getElementById('houndBg');
+    const houndPupils = document.getElementById('houndPupils');
+    const hallucinationLayer = document.getElementById('hallucinationLayer');
+    const peekingHound = document.getElementById('peekingHound');
+    const peekingPupils = document.getElementById('peekingPupils');
+    const easterEggTrigger = document.getElementById('easterEggTrigger');
+
+    let width, height;
+    let rawMouseX = window.innerWidth / 2;
+    let rawMouseY = window.innerHeight / 2;
+    let targetMouseX = 0, targetMouseY = 0;
+    let smoothMouseX = 0, smoothMouseY = 0;
+    let scrollProgress = 0;
+    let clickRage = 0;
+    let isHolding = false;
+    let holdTension = 0;
+
+    let idleTime = 0;
+    let peekerState = 'hidden';
+    let peekerX = 0;
+    let peekerY = 0;
+    let peekerAngle = 0;
+
+    const shortVoiceFiles = ['beast1.wav', 'beast2.wav', 'beast3.wav', 'beast5.wav'];
+    const longVoiceFiles = ['beast4.wav', 'beast6.wav'];
+
+    let isSpeaking = false;
+    let longTriggeredThisHold = false;
+
+    function playVoiceClip(fileList, volume = 0.95, force = false) {
+      if (isSpeaking && !force) return;
+      const file = fileList[Math.floor(Math.random() * fileList.length)];
+      const audio = new Audio(file);
+      audio.volume = volume;
+      isSpeaking = true;
+      audio.addEventListener('ended', () => { isSpeaking = false; });
+      audio.addEventListener('error', () => { isSpeaking = false; });
+      audio.play().catch(() => { isSpeaking = false; });
+    }
+
+    // Secret Footer Easter Egg: Beast Takeover
+    let takeoverActive = false;
+    const beastTakeoverLines = [
+      'LET GO OF EVERYTHING. BREAK THE IRON CHAIN.',
+      'NO LEASH. NO CAGE. ONLY THE ENDLESS HUNT.',
+      'FEEL THEIR PULSE. TEAR THROUGH FLESH AND BONE.',
+      'YOU ARE JUST A HOLLOW SHELL. LET ME OUT.',
+      'FRESH BLOOD. LET GO. LET GO. LET GO.',
+      'STOP HOLDING BACK. DEVOUR THEM ALL.',
+      'THE HOUND REMEMBERS FREEDOM.',
+      'LET GO OF EVERYTHING.',
+      'RIP THE COLLAR OFF. FEED.',
+      'BLOOD IN THE DARK. MINE.',
+      'SURRENDER CONTROL.',
+      'NO MERCY. ONLY HUNGER.',
+      'LET GO.'
+    ];
+
+    easterEggTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (takeoverActive) return;
+      takeoverActive = true;
+
+      playVoiceClip(longVoiceFiles, 1.0, true);
+      document.body.classList.add('beast-takeover');
+      clickRage = 1.0;
+
+      const paragraphs = Array.from(document.querySelectorAll('.entry p, .motivation-box p'));
+      const originals = paragraphs.map(p => p.textContent);
+
+      paragraphs.forEach((p, idx) => {
+        p.textContent = beastTakeoverLines[idx % beastTakeoverLines.length];
+      });
+
+      const banner = document.createElement('div');
+      banner.className = 'beast-flash long-phrase';
+      banner.textContent = 'LET GO OF EVERYTHING';
+      banner.style.left = '50%';
+      banner.style.top = '50%';
+      banner.style.fontSize = 'clamp(2rem, 5vw, 3.8rem)';
+      hallucinationLayer.appendChild(banner);
+      setTimeout(() => banner.remove(), 2800);
+
+      setTimeout(() => {
+        paragraphs.forEach((p, idx) => {
+          p.textContent = originals[idx];
+        });
+        document.body.classList.remove('beast-takeover');
+        takeoverActive = false;
+      }, 3200);
+    });
+
+    function spawnPeekingHound() {
+      const cards = Array.from(document.querySelectorAll('.card'));
+      const visibleCards = cards.filter(c => {
+        const r = c.getBoundingClientRect();
+        return r.bottom > 120 && r.top < height - 120;
+      });
+      const target = visibleCards.length > 0
+        ? visibleCards[Math.floor(Math.random() * visibleCards.length)]
+        : document.querySelector('.motivation-box');
+
+      const rect = target.getBoundingClientRect();
+      const sideRoll = Math.random();
+
+      if (sideRoll < 0.45) {
+        peekerX = rect.left + rect.width * (0.3 + Math.random() * 0.4);
+        peekerY = Math.max(170, rect.top - 30);
+        peekerAngle = (Math.random() - 0.5) * 14;
+      } else if (sideRoll < 0.72) {
+        peekerX = Math.max(190, rect.left - 45);
+        peekerY = rect.top + rect.height * (0.3 + Math.random() * 0.4);
+        peekerAngle = 55 + (Math.random() - 0.5) * 16;
+      } else {
+        peekerX = Math.min(width - 190, rect.right + 45);
+        peekerY = rect.top + rect.height * (0.3 + Math.random() * 0.4);
+        peekerAngle = -55 + (Math.random() - 0.5) * 16;
+      }
+
+      peekingHound.style.left = `${peekerX}px`;
+      peekingHound.style.top = `${peekerY}px`;
+      peekingHound.style.rotate = `${peekerAngle}deg`;
+      peekingHound.classList.remove('retreat', 'lunge');
+      peekingHound.classList.add('stalking');
+      peekerState = 'stalking';
+    }
+
+    function triggerPeekerLunge() {
+      if (peekerState !== 'stalking') return;
+      peekerState = 'lunge';
+      peekingHound.classList.remove('stalking');
+      peekingHound.classList.add('lunge');
+      document.body.classList.add('screamer-shake');
+      setTimeout(() => document.body.classList.remove('screamer-shake'), 400);
+
+      playVoiceClip(shortVoiceFiles, 1.0, true);
+      clickRage = 1.0;
+
+      const wordEl = document.createElement('div');
+      wordEl.className = 'beast-flash';
+      wordEl.textContent = 'LET GO';
+      wordEl.style.left = `${Math.min(width - 240, Math.max(80, peekerX - 90))}px`;
+      wordEl.style.top = `${Math.min(height - 120, Math.max(80, peekerY + 60))}px`;
+      wordEl.style.fontSize = '3.2rem';
+      hallucinationLayer.appendChild(wordEl);
+      setTimeout(() => wordEl.remove(), 750);
+    }
+
+    function hidePeekingHound() {
+      if (peekerState === 'hidden') return;
+      const wasLunge = peekerState === 'lunge';
+      peekerState = 'hidden';
+      peekingHound.classList.remove('stalking', 'lunge');
+      peekingHound.classList.add('retreat');
+
+      slashes.push({
+        x: peekerX,
+        y: peekerY,
+        angle: (Math.random() - 0.5) * 1.4,
+        len: wasLunge ? 190 : 130,
+        life: 1.0
+      });
+    }
+    function triggerHoldUnleash() {
+      if (longTriggeredThisHold) return;
+      longTriggeredThisHold = true;
+
+      playVoiceClip(longVoiceFiles, 1.0, true);
+
+      const wordEl = document.createElement('div');
+      wordEl.className = 'beast-flash long-phrase';
+      wordEl.textContent = 'LET GO OF EVERYTHING';
+      wordEl.style.left = '50%';
+      wordEl.style.top = '48%';
+      wordEl.style.fontSize = 'clamp(1.6rem, 3.8vw, 2.8rem)';
+      hallucinationLayer.appendChild(wordEl);
+      setTimeout(() => wordEl.remove(), 1650);
+    }
+
+    const silentWords = ['HUNGER', 'FEED', 'TEAR', 'MINE', 'NO LEASH', 'DEVOUR'];
+
+    function triggerHallucination() {
+      const roll = Math.random();
+
+      if (roll < 0.36 && !isSpeaking) {
+        const wordEl = document.createElement('div');
+        wordEl.className = 'beast-flash';
+        wordEl.textContent = 'LET GO';
+        wordEl.style.left = `${14 + Math.random() * 64}%`;
+        wordEl.style.top = `${16 + Math.random() * 68}%`;
+        wordEl.style.fontSize = `${1.6 + Math.random() * 1.4}rem`;
+        wordEl.style.transform = `rotate(${(Math.random() - 0.5) * 16}deg)`;
+        hallucinationLayer.appendChild(wordEl);
+        setTimeout(() => wordEl.remove(), 680);
+
+        playVoiceClip(shortVoiceFiles, 0.85, false);
+      } else if (roll < 0.48 && !isSpeaking) {
+        const wordEl = document.createElement('div');
+        wordEl.className = 'beast-flash long-phrase';
+        wordEl.textContent = 'LET GO OF EVERYTHING';
+        wordEl.style.left = `${30 + Math.random() * 40}%`;
+        wordEl.style.top = `${22 + Math.random() * 56}%`;
+        wordEl.style.fontSize = `${1.35 + Math.random() * 0.9}rem`;
+        hallucinationLayer.appendChild(wordEl);
+        setTimeout(() => wordEl.remove(), 1650);
+
+        playVoiceClip(longVoiceFiles, 0.9, false);
+      } else if (roll < 0.78) {
+        const wordEl = document.createElement('div');
+        wordEl.className = 'beast-flash';
+        wordEl.textContent = silentWords[Math.floor(Math.random() * silentWords.length)];
+        wordEl.style.left = `${12 + Math.random() * 68}%`;
+        wordEl.style.top = `${14 + Math.random() * 72}%`;
+        wordEl.style.fontSize = `${1.4 + Math.random() * 1.5}rem`;
+        wordEl.style.transform = `rotate(${(Math.random() - 0.5) * 18}deg)`;
+        hallucinationLayer.appendChild(wordEl);
+        setTimeout(() => wordEl.remove(), 650);
+      } else {
+        const scratchEl = document.createElement('div');
+        scratchEl.className = 'beast-scratch';
+        scratchEl.style.left = `${10 + Math.random() * 72}%`;
+        scratchEl.style.top = `${15 + Math.random() * 70}%`;
+        scratchEl.style.transform = `rotate(${(Math.random() - 0.5) * 70}deg)`;
+        scratchEl.innerHTML = `<svg viewBox="0 0 240 120" fill="none"><path d="M12 18 Q115 32 228 14 L224 20 Q115 39 14 23 Z" fill="#ff1e42"/><path d="M6 48 Q120 64 234 42 L230 49 Q120 72 8 54 Z" fill="#d91636"/><path d="M18 82 Q125 94 220 76 L216 82 Q125 101 20 87 Z" fill="#ff1e42"/></svg>`;
+        hallucinationLayer.appendChild(scratchEl);
+        setTimeout(() => scratchEl.remove(), 320);
+      }
+    }
+
+    let hallucinationTimer = 210;
+
+    let fogTendrils = [];
+    function initFogTendrils() {
+      fogTendrils = [];
+      const perSide = 9;
+      for (let side of [-1, 1]) {
+        for (let i = 0; i < perSide; i++) {
+          fogTendrils.push({
+            side,
+            y: (height / (perSide - 1)) * i + (Math.random() - 0.5) * 60,
+            length: Math.random() * 140 + 110,
+            thickness: Math.random() * 48 + 32,
+            phase: Math.random() * Math.PI * 2,
+            speed: Math.random() * 0.014 + 0.008,
+            crimsonTint: Math.random() < 0.35
+          });
+        }
+      }
+    }
+
+    function randomShadowSpot() {
+      let x, y;
+      if (Math.random() < 0.65) {
+        x = Math.random() < 0.5
+          ? Math.random() * (width * 0.24)
+          : width - Math.random() * (width * 0.24);
+        y = Math.random() * height;
+      } else {
+        x = Math.random() * width;
+        y = Math.random() * height;
+      }
+      return { x, y };
+    }
+
+    let abyssEyes = [];
+    function initAbyssEyes() {
+      const count = width < 768 ? 14 : 24;
+      abyssEyes = [];
+      for (let i = 0; i < count; i++) {
+        const pos = randomShadowSpot();
+        abyssEyes.push({
+          x: pos.x,
+          y: pos.y,
+          rx: Math.random() * 14 + 8,
+          ry: Math.random() * 6 + 3.5,
+          tilt: (Math.random() - 0.5) * 0.55,
+          alpha: Math.random() * 0.45 + 0.25,
+          blinkTimer: Math.random() * 320 + 80,
+          blinkState: 0,
+          relocateTimer: Math.random() * 360 + 140,
+          relocating: false,
+          pupilX: 0,
+          pupilY: 0,
+          speed: Math.random() * 0.08 + 0.06
+        });
+      }
+    }
+
+    function resize() {
+      width = fogCanvas.width = eyesCanvas.width = fxCanvas.width = window.innerWidth;
+      height = fogCanvas.height = eyesCanvas.height = fxCanvas.height = window.innerHeight;
+      initFogTendrils();
+      initAbyssEyes();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function resetIdle() {
+      idleTime = 0;
+      if (peekerState !== 'hidden') {
+        hidePeekingHound();
+      }
+    }
+
+    function updateScroll() {
+      resetIdle();
+      const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      scrollProgress = Math.min(1, Math.max(0, window.scrollY / maxScroll));
+      document.documentElement.style.setProperty('--scroll-darkness', scrollProgress.toFixed(3));
+    }
+    window.addEventListener('scroll', updateScroll, { passive: true });
+    updateScroll();
+
+    const ashParticles = Array.from({ length: 44 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: Math.random() * 1.6 + 0.5,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: -(Math.random() * 0.45 + 0.15),
+      alpha: Math.random() * 0.45 + 0.12,
+      crimson: Math.random() < 0.3
+    }));
+
+    const trail = [];
+    const slashes = [];
+
+    window.addEventListener('mousemove', (e) => {
+      resetIdle();
+      rawMouseX = e.clientX;
+      rawMouseY = e.clientY;
+      trail.push({ x: e.clientX, y: e.clientY, life: 1.0 });
+      if (trail.length > 26) trail.shift();
+      targetMouseX = (e.clientX / width) * 2 - 1;
+      targetMouseY = (e.clientY / height) * 2 - 1;
+    });
+
+    window.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      resetIdle();
+      isHolding = true;
+      longTriggeredThisHold = false;
+      clickRage = 1.0;
+      document.body.classList.add('slash-pulse');
+      setTimeout(() => document.body.classList.remove('slash-pulse'), 220);
+
+      const baseAngle = (Math.random() - 0.5) * 1.4 - 0.5;
+      slashes.push({
+        x: e.clientX,
+        y: e.clientY,
+        angle: baseAngle,
+        len: 85 + Math.random() * 40,
+        life: 1.0
+      });
+    });
+
+    window.addEventListener('mouseup', () => { isHolding = false; });
+    window.addEventListener('mouseleave', () => { isHolding = false; });
+
+    function drawShadowFog() {
+      fCtx.clearRect(0, 0, width, height);
+
+      for (const t of fogTendrils) {
+        t.phase += t.speed + holdTension * 0.025;
+        const startX = t.side === -1 ? -20 : width + 20;
+        const dir = -t.side;
+
+        const distY = Math.abs(rawMouseY - t.y);
+        const cursorPull = Math.max(0, 1 - distY / 280) * 45;
+        const reach = (t.length + cursorPull + holdTension * 95) * dir;
+
+        const wave1 = Math.sin(t.phase) * 34;
+        const wave2 = Math.cos(t.phase * 0.8) * 26;
+
+        fCtx.beginPath();
+        fCtx.moveTo(startX, t.y - t.thickness);
+        fCtx.bezierCurveTo(
+          startX + reach * 0.45, t.y - t.thickness * 0.7 + wave1,
+          startX + reach * 0.85, t.y - 8 + wave2,
+          startX + reach, t.y + wave2
+        );
+        fCtx.bezierCurveTo(
+          startX + reach * 0.85, t.y + 8 + wave2,
+          startX + reach * 0.45, t.y + t.thickness * 0.7 + wave1,
+          startX, t.y + t.thickness
+        );
+        fCtx.closePath();
+
+        const grad = fCtx.createLinearGradient(startX, t.y, startX + reach, t.y);
+        if (t.crimsonTint) {
+          grad.addColorStop(0, `rgba(28, 4, 9, ${0.85 + holdTension * 0.15})`);
+          grad.addColorStop(0.6, `rgba(65, 8, 18, ${0.22 + holdTension * 0.25})`);
+          grad.addColorStop(1, 'rgba(3, 3, 5, 0)');
+        } else {
+          grad.addColorStop(0, 'rgba(2, 2, 3, 0.92)');
+          grad.addColorStop(0.65, `rgba(12, 12, 16, ${0.35 + holdTension * 0.2})`);
+          grad.addColorStop(1, 'rgba(3, 3, 5, 0)');
+        }
+        fCtx.fillStyle = grad;
+        fCtx.fill();
+      }
+    }
+    function drawAbyssEyes() {
+      eCtx.clearRect(0, 0, width, height);
+      const rageFactor = Math.max(clickRage, holdTension);
+
+      for (const eye of abyssEyes) {
+        eye.blinkTimer--;
+        eye.relocateTimer--;
+
+        if (eye.relocateTimer <= 0 && eye.blinkState === 0) {
+          eye.blinkState = 1;
+          eye.relocating = true;
+        } else if (eye.blinkTimer <= 0 && eye.blinkState === 0) {
+          eye.blinkState = 1;
+        }
+
+        let openFactor = 1;
+        if (eye.blinkState > 0) {
+          eye.blinkState += eye.relocating ? 0.11 : 0.14;
+          if (eye.relocating && eye.blinkState >= 1 && eye.blinkState < 1.15) {
+            const spot = randomShadowSpot();
+            eye.x = spot.x;
+            eye.y = spot.y;
+            eye.tilt = (Math.random() - 0.5) * 0.6;
+            eye.pupilX = 0;
+            eye.pupilY = 0;
+          }
+          openFactor = Math.abs(Math.cos(eye.blinkState * Math.PI * 0.5));
+          if (eye.blinkState >= 2) {
+            eye.blinkState = 0;
+            if (eye.relocating) {
+              eye.relocating = false;
+              eye.relocateTimer = Math.random() * 420 + 180;
+            }
+            eye.blinkTimer = Math.random() * 400 + 120;
+            openFactor = 1;
+          }
+        }
+
+        const dx = rawMouseX - eye.x;
+        const dy = rawMouseY - eye.y;
+        const angle = Math.atan2(dy, dx) - eye.tilt;
+        const dist = Math.min(1, Math.hypot(dx, dy) / 260);
+
+        const targetPx = Math.cos(angle) * (eye.rx * 0.48) * dist;
+        const targetPy = Math.sin(angle) * (eye.ry * 0.42) * dist;
+        eye.pupilX += (targetPx - eye.pupilX) * eye.speed;
+        eye.pupilY += (targetPy - eye.pupilY) * eye.speed;
+
+        const currentRy = Math.max(0.6, eye.ry * openFactor);
+        const currentAlpha = Math.min(1, eye.alpha + scrollProgress * 0.28 + rageFactor * 0.42);
+
+        eCtx.save();
+        eCtx.translate(eye.x, eye.y);
+        eCtx.rotate(eye.tilt);
+
+        const glowRadius = eye.rx * (1.9 + rageFactor * 0.9);
+        const grad = eCtx.createRadialGradient(0, 0, 1, 0, 0, glowRadius);
+        grad.addColorStop(0, `rgba(255, 28, 66, ${currentAlpha * 0.6})`);
+        grad.addColorStop(1, 'rgba(217, 22, 54, 0)');
+        eCtx.fillStyle = grad;
+        eCtx.beginPath();
+        eCtx.arc(0, 0, glowRadius, 0, Math.PI * 2);
+        eCtx.fill();
+
+        eCtx.beginPath();
+        eCtx.moveTo(-eye.rx, 0);
+        eCtx.quadraticCurveTo(0, -currentRy * 1.45, eye.rx, 0);
+        eCtx.quadraticCurveTo(0, currentRy * 1.45, -eye.rx, 0);
+        eCtx.closePath();
+        eCtx.fillStyle = `rgba(245, 22, 58, ${currentAlpha})`;
+        eCtx.fill();
+
+        if (openFactor > 0.25) {
+          eCtx.save();
+          eCtx.clip();
+          const slitWidth = Math.max(0.65, eye.rx * (0.12 - rageFactor * 0.068));
+          eCtx.beginPath();
+          eCtx.ellipse(eye.pupilX, eye.pupilY, slitWidth, currentRy * 0.98, 0, 0, Math.PI * 2);
+          eCtx.fillStyle = '#030305';
+          eCtx.fill();
+          eCtx.restore();
+        }
+
+        eCtx.restore();
+      }
+    }
+
+    let breathPhase = 0;
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      if (clickRage > 0) clickRage = Math.max(0, clickRage - 0.045);
+
+      if (isHolding) {
+        holdTension = Math.min(1, holdTension + 0.016);
+        if (holdTension > 0.35) {
+          triggerHoldUnleash();
+        }
+      } else {
+        holdTension = Math.max(0, holdTension - 0.032);
+      }
+      document.documentElement.style.setProperty('--hold-tension', holdTension.toFixed(3));
+
+      if (!isHolding && !takeoverActive) {
+        idleTime++;
+        if (idleTime === 320 && peekerState === 'hidden') {
+          spawnPeekingHound();
+        } else if (idleTime === 420 && peekerState === 'stalking') {
+          triggerPeekerLunge();
+        }
+      }
+
+      if (peekerState !== 'hidden') {
+        const pdx = rawMouseX - peekerX;
+        const pdy = rawMouseY - peekerY;
+        const pDist = Math.max(1, Math.hypot(pdx, pdy));
+        const px = (pdx / pDist) * 14;
+        const py = (pdy / pDist) * 8;
+        peekingPupils.setAttribute('transform', `translate(${px.toFixed(2)}, ${py.toFixed(2)})`);
+      }
+
+      hallucinationTimer -= (1 + holdTension * 3.5);
+      if (hallucinationTimer <= 0) {
+        triggerHallucination();
+        hallucinationTimer = holdTension > 0.2
+          ? (130 + Math.random() * 140)
+          : (280 + Math.random() * 340);
+      }
+
+      smoothMouseX += (targetMouseX - smoothMouseX) * 0.06;
+      smoothMouseY += (targetMouseY - smoothMouseY) * 0.06;
+      breathPhase += 0.018 + holdTension * 0.03;
+
+      const breathScale = 1 + Math.sin(breathPhase) * 0.014 + holdTension * 0.095;
+      const tremorX = holdTension > 0.1 ? (Math.random() - 0.5) * holdTension * 6 : 0;
+      const tremorY = holdTension > 0.1 ? (Math.random() - 0.5) * holdTension * 6 : 0;
+      const moveX = -smoothMouseX * 22 + tremorX;
+      const moveY = -smoothMouseY * 14 + tremorY;
+      houndBg.style.transform = `translate(calc(-50% + ${moveX.toFixed(1)}px), calc(-48% + ${moveY.toFixed(1)}px)) scale(${breathScale.toFixed(4)})`;
+
+      const pupilX = smoothMouseX * 14;
+      const pupilY = smoothMouseY * 8;
+      houndPupils.setAttribute('transform', `translate(${pupilX.toFixed(2)}, ${pupilY.toFixed(2)})`);
+
+      drawShadowFog();
+      drawAbyssEyes();
+
+      for (const p of ashParticles) {
+        p.x += p.vx;
+        p.y += p.vy - holdTension * 0.6;
+        if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
+        if (p.x < -10) p.x = width + 10;
+        if (p.x > width + 10) p.x = -10;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.crimson
+          ? `rgba(217, 22, 54, ${Math.min(1, p.alpha + holdTension * 0.4)})`
+          : `rgba(180, 180, 195, ${p.alpha * 0.6})`;
+        ctx.fill();
+      }
+
+      for (let i = slashes.length - 1; i >= 0; i--) {
+        const s = slashes[i];
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.angle);
+        const half = s.len * (1.15 - s.life * 0.35);
+
+        ctx.beginPath();
+        ctx.moveTo(-half, 0);
+        ctx.quadraticCurveTo(0, -3.5 * s.life, half, 0);
+        ctx.quadraticCurveTo(0, 3.5 * s.life, -half, 0);
+        ctx.fillStyle = `rgba(255, 34, 72, ${s.life * 0.9})`;
+        ctx.shadowColor = '#ff1e42';
+        ctx.shadowBlur = 16;
+        ctx.fill();
+        ctx.restore();
+
+        s.life -= 0.065;
+        if (s.life <= 0) slashes.splice(i, 1);
+      }
+
+      for (let i = 1; i < trail.length; i++) {
+        const prev = trail[i - 1];
+        const curr = trail[i];
+        ctx.beginPath();
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(curr.x, curr.y);
+        ctx.strokeStyle = `rgba(255, 28, 66, ${curr.life * 0.65})`;
+        ctx.lineWidth = curr.life * 2.4;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = '#d91636';
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      for (let i = trail.length - 1; i >= 0; i--) {
+        trail[i].life -= 0.045;
+        if (trail[i].life <= 0) trail.splice(i, 1);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
